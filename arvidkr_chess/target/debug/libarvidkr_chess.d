@@ -1,0 +1,1 @@
+/home/arvid/Desktop/Skola/Kurser/DD1337/++/ChessAPI/actual/arvidkr-chess/arvidkr_chess/target/debug/libarvidkr_chess.rlib: /home/arvid/Desktop/Skola/Kurser/DD1337/++/ChessAPI/actual/arvidkr-chess/arvidkr_chess/src/lib.rs
