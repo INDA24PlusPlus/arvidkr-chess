@@ -5,5 +5,7 @@ fn main(){
 	board.init_board();
 	board.print_board();
 	arvidkr_chess::make_move(&mut board, "d2d4".to_string());
-	board.print_board(); 
+	arvidkr_chess::make_move(&mut board, "d7d5".to_string());
+	board.print_board();
+	arvidkr_chess::print_all_moves(&mut board); 
 }

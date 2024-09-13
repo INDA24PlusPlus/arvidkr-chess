@@ -61,9 +61,9 @@ fn colour_of(piece: char) -> i64 {
                 return 2;
         }
         else if piece == 'p' || piece == 'n' || piece == 'k' || piece == 'q' || piece == 'b' || piece == 'b' || piece == 'r' {
-                return 1;
+                return 0;
         }
-        return 0;
+        return 1;
 }
 
 
@@ -184,7 +184,7 @@ fn pawn_moves(board: &mut Board, pos: i64) -> Vec<String> {
 	}
 
 	let diagM = (c+col_shift)*8+r;
-	let mcolour = colour_of(board.board[diagM as usize]);
+	let mcolour = colour_of(board.board[diagL as usize]);
         if mcolour == 2 && !(c+col_shift < 0 || c+col_shift >= 8 || r < 0){
                 if is_legal(board, c*8+r, diagM) {
                         ret.push(encode_move(c*8+r, diagM));
@@ -192,7 +192,7 @@ fn pawn_moves(board: &mut Board, pos: i64) -> Vec<String> {
         }
 
 	let diagR = (c+col_shift)*8+r+1;
-	let rcolour = colour_of(board.board[diagR as usize]);
+	let rcolour = colour_of(board.board[diagL as usize]);
         if rcolour == 1-board.start && !(c+col_shift < 0 || c+col_shift >= 8 || r+1 >= 8){
                 if is_legal( board, c*8+r, diagR) {
                         ret.push(encode_move(c*8+r, diagR));
@@ -201,158 +201,22 @@ fn pawn_moves(board: &mut Board, pos: i64) -> Vec<String> {
 	return ret;
 }
 
-fn rook_moves(board: &mut Board, pos: i64) -> Vec<String> {
-        let mut ret: Vec<String> = Vec::new();
-        let c: i64 = pos%8;
-        let r: i64 = pos/8;
-        let mut left: bool = false;
-        let mut right: bool = false;
-        let mut up: bool = false;
-        let mut down: bool = false;
-
-        for i in 1..8 {
-                //left up, c--, r++
-                if c-i >= 0 && !left {
-                        let x = r*8 + c-i;
-                        let col = colour_of(board.board[x as usize]);
-                        if col == board.start {
-                                left = true;
-                        }
-                        else if col != 2 {
-                                ret.push(encode_move(pos, x));
-                                left = true;
-                        } else {
-                                ret.push(encode_move(pos, x));
-                        }
-                }
-
-                //Right up, c++, r++
-                if c+i < 8 && !right {
-                        let x = r*8 + c+i;
-                        let col = colour_of(board.board[x as usize]);
-                        if col == board.start {
-			        right = true;
-                        }
-                        else if col != 2 {
-                                ret.push(encode_move(pos, x));
-                                right = true;
-                        } else {
-                                ret.push(encode_move(pos, x));
-                        }
-                }
-
-                //Left down, c--, r--
-                if r-i >= 0 && !up {
-                        let x = (r-i)*8 + c;
-                        let col = colour_of(board.board[x as usize]);
-                        if col == board.start {
-                                up = true;
-                        }
-                        else if col != 2 {
-                                ret.push(encode_move(pos, x));
-                                up = true;
-                        } else {
-                                ret.push(encode_move(pos, x));
-                        }
-                }
-
-                //Right down, c++, r--
-                if r+i < 8 && !down {
-                        let x = (r+i)*8 + c;
-                        let col = colour_of(board.board[x as usize]);
-                        if col == board.start {
-                                down = true;
-                        }
-                        else if col != 2 {
-			        ret.push(encode_move(pos, x));
-                                down = true;
-                        } else {
-                                ret.push(encode_move(pos, x));
-                        }
-                }
-
-
-
-
-        }
-
-        return ret;
-}
-
-
 fn bishop_moves(board: &mut Board, pos: i64) -> Vec<String> {
         let mut ret: Vec<String> = Vec::new();
         let c: i64 = pos%8;
         let r: i64 = pos/8;
-        let mut left_up: bool = false;
-	let mut right_up: bool = false;
-	let mut left_down: bool = false;
-	let mut right_down: bool = false;
+        let left_up: bool = false;
+	let right_up: bool = false;
+	let left_down: bool = false;
+	let right_down: bool = false;
 
-	for i in 1..8 {
+	for i in 0..8 {
 		//left up, c--, r++
 		if c-i >= 0 && r+i < 8 && !left_up {
 			let x = (r+i)*8 + c-i;
-			let col = colour_of(board.board[x as usize]);
-			if col == board.start {
-				left_up = true;
-			} 
-			else if col != 2 {
-				ret.push(encode_move(pos, x));
-				left_up = true;
-			} else {
-				ret.push(encode_move(pos, x));
-			}	
+			let col = colour_of(board.board[x as usize];
+						
 		}
-	
-		//Right up, c++, r++
-		if c+i < 8 && r+i < 8 && !right_up {
-                        let x = (r+i)*8 + c+i;
-                        let col = colour_of(board.board[x as usize]);
-                        if col == board.start {
-                                right_up = true;
-                        }    
-                        else if col != 2 { 
-                                ret.push(encode_move(pos, x));
-                                right_up = true;
-                        } else {
-                                ret.push(encode_move(pos, x));
-                        }
-                }
-
-		//Left down, c--, r--
-		if c-i >= 0 && r-i >= 0 && !left_down {
-                        let x = (r-i)*8 + c-i;
-                        let col = colour_of(board.board[x as usize]);
-                        if col == board.start {
-                                left_down = true;
-                        }    
-                        else if col != 2 { 
-                                ret.push(encode_move(pos, x));
-                                left_down = true;
-                        } else {
-                                ret.push(encode_move(pos, x));
-                        }
-                }
-
-		//Right down, c++, r--
-		if c+i < 8 && r-i >= 0 && !right_down {
-                        let x = (r-i)*8 + c+i;
-                        let col = colour_of(board.board[x as usize]);
-                        if col == board.start {
-                                right_down = true;
-                        }    
-                        else if col != 2 { 
-                                ret.push(encode_move(pos, x));
-                                right_down = true;
-                        } else {
-                                ret.push(encode_move(pos, x));
-                        }
-                }
-
-
-
-	
 	}
 
 	return ret;
@@ -369,12 +233,6 @@ fn all_moves(board: &mut Board) -> Vec<String> {
                                 	ret.push(s);
                         	}
 
-			} 
-			else if board.board[i as usize] == 'b'{
-				let temp_vec = bishop_moves(board, i);
-				for s in temp_vec {
-					ret.push(s);
-				}
 			}
 		}
 		else {
@@ -386,14 +244,7 @@ fn all_moves(board: &mut Board) -> Vec<String> {
         	                        ret.push(s);
 	                        }
 
-			} 
-			else if board.board[i as usize] == 'B'{
-                                let temp_vec = bishop_moves(board, i);
-                                for s in temp_vec {
-                                        ret.push(s);
-                                }
-                        }
-
+			}
 		}
 		
 	}	
