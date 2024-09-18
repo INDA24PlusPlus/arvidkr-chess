@@ -4,6 +4,7 @@ pub struct Board {
         history: Vec<String>,
         castle : [bool; 4],
         en_passant_square: i64,
+        last_capture: i64,
 
 }
 
@@ -15,6 +16,7 @@ impl Board {
                         history: Vec::new(),
                         castle: [true; 4],
                         en_passant_square: -1,
+                        last_capture: -1,
 		}
 	}
 
@@ -75,7 +77,7 @@ impl Board {
                         }
                         counter += 1;
                 }
-                self.print_board();
+                //self.print_board();
                 self.history.push(self.lineboard());
         }
 
@@ -134,13 +136,19 @@ impl Board {
         }
 
         pub fn make_move(&mut self, from: i64, to: i64, promto: char){
-                if self.board[from as usize] == 'p' && ((to-from).abs() == 7 || (to-from).abs() == 9) {
+                if self.board[from as usize] == 'p' && ((to-from).abs() == 7 || (to-from).abs() == 9) && to == self.en_passant_square{
                         let remov: i64 = to-8;
                         self.board[remov as usize] = '.';
+                        self.last_capture = self.history.len() as i64;
                 }
-                else if self.board[from as usize] == 'P' && ((to-from).abs() == 7 || (to-from).abs() == 9) {
+                else if self.board[from as usize] == 'P' && ((to-from).abs() == 7 || (to-from).abs() == 9) && to == self.en_passant_square{
                         let remov: i64 = to+8;
                         self.board[remov as usize] = '.';
+                        self.last_capture = self.history.len() as i64;
+                }
+
+                if colour_of(self.board[to as usize]) != 2{
+                        self.last_capture = self.history.len() as i64;
                 }
 
                 self.board[to as usize] = self.board[from as usize];
@@ -226,6 +234,33 @@ fn colour_of(piece: char) -> i64 {
         return 0;
 }
 
+fn checking_legal(board: &mut Board, from: i64, to: i64) -> bool {
+
+        let pers: String = board.lineboard();
+
+        board.make_move(from, to, '.');
+        board.switch_start();
+
+
+        let mut king_pos = -1;
+
+        for i in 0..64 {
+                if (board.start == 1 && board.board[i as usize] == 'k') || (board.start == 0 && board.board[i as usize] == 'K') {king_pos = i;}
+        }
+
+        let mut ans : bool = true;
+
+        if in_check(board, king_pos) {
+                ans = false;
+        } 
+
+        board.infoload(pers);
+
+        board.history.pop();
+        board.history.pop();
+        board.last_capture = board.history.len() as i64;
+        return ans;
+}
 
 fn is_legal(board: &mut Board, from: i64, to: i64) -> bool {
         if to < 0 || to > 63 {
@@ -237,6 +272,8 @@ fn is_legal(board: &mut Board, from: i64, to: i64) -> bool {
         if colour1 == 2 || colour1 == colour2 {
                 return false;
         }
+
+
         return true; 
 }
 
@@ -336,22 +373,26 @@ fn pawn_moves(board: &mut Board, pos: i64) -> Vec<String> {
 		
 	
 	let diag_l = (c+col_shift)*8+r-1;
-	let lcolour = colour_of(board.board[diag_l as usize]);
+        let mut lcolour = -1;
+        if diag_l < 64 && diag_l >= 0 {
+                lcolour = colour_of(board.board[diag_l as usize]);
+        }
+	
 	if (lcolour == 1-board.start || diag_l == board.en_passant_square) && !(c+col_shift < 0 || c+col_shift >= 8 || r-1 < 0){
 		if is_legal(board, c*8+r, diag_l) {
                         if c+col_shift == 7 || c+col_shift == 0 {
-                                let mut pQ = encode_move(c*8+r, diag_l);
-                                pQ.push('Q');
-                                let mut pN = encode_move(c*8+r, diag_l);
-                                pN.push('N');
-                                let mut pR = encode_move(c*8+r, diag_l);
-                                pR.push('R');
-                                let mut pB = encode_move(c*8+r, diag_l);
-                                pB.push('B');  
-                                ret.push(pQ);
-                                ret.push(pN);
-                                ret.push(pR);
-                                ret.push(pB);                              
+                                let mut p_q = encode_move(c*8+r, diag_l);
+                                p_q.push('Q');
+                                let mut p_n = encode_move(c*8+r, diag_l);
+                                p_n.push('N');
+                                let mut p_r = encode_move(c*8+r, diag_l);
+                                p_r.push('R');
+                                let mut p_b = encode_move(c*8+r, diag_l);
+                                p_b.push('B');  
+                                ret.push(p_q);
+                                ret.push(p_n);
+                                ret.push(p_r);
+                                ret.push(p_b);                              
                         }
                         else {
 			        ret.push(encode_move(c*8+r, diag_l));
@@ -360,22 +401,25 @@ fn pawn_moves(board: &mut Board, pos: i64) -> Vec<String> {
 	}
 
 	let diag_m = (c+col_shift)*8+r;
-	let mcolour = colour_of(board.board[diag_m as usize]);
+        let mut mcolour = -1;
+        if diag_m < 64 && diag_m >= 0 {
+                mcolour = colour_of(board.board[diag_m as usize]);
+        }
         if mcolour == 2 && !(c+col_shift < 0 || c+col_shift >= 8 || r < 0){
                 if is_legal(board, c*8+r, diag_m) {
                         if c+col_shift == 7 || c+col_shift == 0 {
-                                let mut pQ = encode_move(c*8+r, diag_m);
-                                pQ.push('Q');
-                                let mut pN = encode_move(c*8+r, diag_m);
-                                pN.push('N');
-                                let mut pR = encode_move(c*8+r, diag_m);
-                                pR.push('R');
-                                let mut pB = encode_move(c*8+r, diag_m);
-                                pB.push('B');  
-                                ret.push(pQ);
-                                ret.push(pN);
-                                ret.push(pR);
-                                ret.push(pB);                              
+                                let mut p_q = encode_move(c*8+r, diag_m);
+                                p_q.push('Q');
+                                let mut p_n = encode_move(c*8+r, diag_m);
+                                p_n.push('N');
+                                let mut p_r = encode_move(c*8+r, diag_m);
+                                p_r.push('R');
+                                let mut p_b = encode_move(c*8+r, diag_m);
+                                p_b.push('B');  
+                                ret.push(p_q);
+                                ret.push(p_n);
+                                ret.push(p_r);
+                                ret.push(p_b);                             
                         }
                         else {
                                 ret.push(encode_move(c*8+r, diag_m));
@@ -384,22 +428,26 @@ fn pawn_moves(board: &mut Board, pos: i64) -> Vec<String> {
         }
 
 	let diag_r = (c+col_shift)*8+r+1;
-	let rcolour = colour_of(board.board[diag_r as usize]);
+        let mut rcolour = -1;
+        if diag_r < 64 && diag_r >= 0 {
+                rcolour = colour_of(board.board[diag_r as usize]);
+        }
+
         if (rcolour == 1-board.start || diag_r == board.en_passant_square) && !(c+col_shift < 0 || c+col_shift >= 8 || r+1 >= 8){
                 if is_legal( board, c*8+r, diag_r) {
                         if c+col_shift == 7 || c+col_shift == 0 {
-                                let mut pQ = encode_move(c*8+r, diag_r);
-                                pQ.push('Q');
-                                let mut pN = encode_move(c*8+r, diag_r);
-                                pN.push('N');
-                                let mut pR = encode_move(c*8+r, diag_r);
-                                pR.push('R');
-                                let mut pB = encode_move(c*8+r, diag_r);
-                                pB.push('B');  
-                                ret.push(pQ);
-                                ret.push(pN);
-                                ret.push(pR);
-                                ret.push(pB);                              
+                                let mut p_q = encode_move(c*8+r, diag_r);
+                                p_q.push('Q');
+                                let mut p_n = encode_move(c*8+r, diag_r);
+                                p_n.push('N');
+                                let mut p_r = encode_move(c*8+r, diag_r);
+                                p_r.push('R');
+                                let mut p_b = encode_move(c*8+r, diag_r);
+                                p_b.push('B');  
+                                ret.push(p_q);
+                                ret.push(p_n);
+                                ret.push(p_r);
+                                ret.push(p_b);                             
                         }
                         else {
                                 ret.push(encode_move(c*8+r, diag_r));
@@ -816,12 +864,26 @@ fn all_moves(board: &mut Board, king: bool) -> Vec<String> {
 		}
 		
 	}	
-	return ret;
 
+        return ret;
+}
+
+pub fn filtered_moves(board: &mut Board) -> Vec<String> {
+        let ret = all_moves(board, true);
+        let mut real_ret: Vec<String> = Vec::new();
+
+        for x in ret {
+                let duplo = decode_move(x.clone());
+                if checking_legal(board, duplo.0, duplo.1){
+                        real_ret.push(x);
+                }
+        }
+
+	return real_ret;
 }
 
 pub fn print_all_moves(board: &mut Board){
-	let v = all_moves(board, true);
+	let v = filtered_moves(board);
 	for s in v {
 		println!("{}", s);
 	}
@@ -859,6 +921,46 @@ pub fn load_from_info(board: &mut Board, info: String){
         board.infoload(info);
 }
 
+pub fn load_from_fen(board: &mut Board, info: String){
+        
+}
+
+pub fn is_over(board: &mut Board) -> i64 {
+        let testing = filtered_moves(board);
+        for x in board.history.clone() {
+                let mut counter = 0;
+                for y in board.history.clone() {
+                        if x == y {counter += 1;}
+                }
+                if counter >= 3 {
+                        return 3; //3 fold rep
+                }
+        }
+
+        let temp: i64 = board.history.len() as i64;
+        if temp - board.last_capture >= 50 {
+                return 4; //50 move rule
+        }
+
+        if testing.len() != 0 {
+                return 0;
+        }
+
+        let mut king_pos = -1;
+        for i in 0..64 {
+                if (board.start == 1 && board.board[i as usize] == 'k') || (board.start == 0 && board.board[i as usize] == 'K'){
+                        king_pos = i;
+                }
+        }
+        if in_check(board, king_pos) {
+                return 1; //Checkmate
+        }
+        return 2;
+}
+
+pub fn get_start(board: &mut Board) -> i64 {
+        return board.start;
+}
 
 #[cfg(test)]
 mod tests {

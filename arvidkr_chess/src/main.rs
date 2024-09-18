@@ -46,6 +46,32 @@ fn main(){
 			}
 		}
 		println!("");
+		let state = arvidkr_chess::is_over(&mut board);
+		if state == 1 {
+			println!("Checkmate!");
+			if arvidkr_chess::get_start(&mut board) == 0 {
+				println!("WHITE WINS");
+			}
+			else {
+				println!("BLACK WINS");
+			}
+			break;
+		}
+		else if state == 2 {
+			println!("Stalemate!");
+			println!("DRAW");
+			break;
+		}
+		else if state == 3 {
+			println!("Threefold repetition!");
+			println!("DRAW");
+			break;
+		}
+		else if state == 4 {
+			println!("50 move rule");
+			println!("DRAW");
+		} 
+
 		println!("");
 		println!("");
 	}
