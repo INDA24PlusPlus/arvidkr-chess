@@ -8,7 +8,7 @@ mod chess_tests {
         let mut board: Board = Board::new();
 
 
-        load_from_fen(&mut board, fenstring_to_vec("3b1q1q/1N2PRQ1/rR3KBr/B4PP1/2Pk1r1b/1P2P1N1/2P2P2/8 b - - 0".to_string()));
+        load_from_fen(&mut board, fenstring_to_vec("3b1q1q/1N2PRQ1/rR3KBr/B4PP1/2Pk1r1b/1P2P1N1/2P2P2/8 b - - 0 0".to_string()));
         assert_eq!(is_over(&mut board), 1);
         assert_eq!(get_amount_moves(&mut board), 0);
 
@@ -88,16 +88,15 @@ mod chess_tests {
     fn check_possible_moves() {
         let mut board:  Board = Board::new();
 
-
         load_from_fen(&mut board, fenstring_to_vec("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1".to_string()));
         assert_eq!(get_amount_moves(&mut board), 20);
 
 
-        load_from_fen(&mut board, fenstring_to_vec("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0".to_string()));
+        load_from_fen(&mut board, fenstring_to_vec("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 0".to_string()));
         assert_eq!(get_amount_moves(&mut board), 48);
 
 
-        load_from_fen(&mut board, fenstring_to_vec("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0".to_string()));
+        load_from_fen(&mut board, fenstring_to_vec("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 0".to_string()));
         assert_eq!(get_amount_moves(&mut board), 14);
 
 
@@ -107,5 +106,26 @@ mod chess_tests {
 
         load_from_fen(&mut board, fenstring_to_vec("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8  ".to_string()));
         assert_eq!(get_amount_moves(&mut board), 44);
+
+
+        load_from_fen(&mut board, fenstring_to_vec("r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10".to_string()));
+        assert_eq!(get_amount_moves(&mut board), 46);
+
+
+        load_from_fen(&mut board, fenstring_to_vec("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1".to_string()));
+        assert_eq!(get_amount_moves(&mut board), 14);
+
+
+        load_from_fen(&mut board, fenstring_to_vec("5b1k/8/8/2pP4/8/K7/8/8 w - c6 0 1".to_string()));
+        assert_eq!(get_amount_moves(&mut board), 5);
+
+
+        load_from_fen(&mut board, fenstring_to_vec("4r1k1/p4pp1/2n2n1B/2b5/N6Q/P2q1N2/1r4PP/R4R1K b - - 1 23".to_string()));
+        assert_eq!(get_amount_moves(&mut board), 79);
+
+
+        load_from_fen(&mut board, fenstring_to_vec("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1".to_string()));
+        assert_eq!(get_amount_moves(&mut board), 48);
+
     }
 }

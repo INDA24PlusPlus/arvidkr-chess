@@ -7,6 +7,7 @@ pub struct Board {
         castle : [bool; 4],
         en_passant_square: i64,
         last_capture: i64,
+        time_now: i64,
 
 }
 
@@ -19,6 +20,7 @@ impl Board {
                         castle: [true; 4],
                         en_passant_square: -1,
                         last_capture: 0,
+                        time_now: 0,
 		}
 	}
 
@@ -48,6 +50,8 @@ impl Board {
                 }
                 ret.push('+');
                 ret.push_str(&self.last_capture.to_string());
+                ret.push('+');
+                ret.push_str(&self.time_now.to_string());
                 return ret;
         }
 
@@ -80,14 +84,19 @@ impl Board {
                                 let y: usize = counter-7;
                                 self.board[y] = x;
                         } else if counter > 71{
-                                temp_s.push(x);
+                                if x == '+' {
+                                        let l_cap: i64 = temp_s.clone().parse().unwrap();
+                                        self.last_capture = l_cap;
+                                        temp_s.clear();
+                                } 
+                                else {
+                                        temp_s.push(x);
+                                }
                         }
                         counter += 1;
                 }
-                //println!("temps {}", temp_s);
-                let l_cap: i64 = temp_s.parse().unwrap();
-                self.last_capture = l_cap;
-                //self.print_board();
+                let c_mov: i64 = temp_s.parse().unwrap();
+                self.time_now = c_mov;
                 self.history.push(self.lineboard());
         }
 
@@ -137,7 +146,6 @@ impl Board {
         }
 
         pub fn get_board(&self){
-                let s = self.lineboard();
                 let index: usize = self.history.len()-1;
                 let s1 = self.history[index].clone();
                 println!("{}", s1);
@@ -148,23 +156,24 @@ impl Board {
         }
 
         pub fn make_move(&mut self, from: i64, to: i64, promto: char){
+                self.time_now += 1;
                 if self.board[from as usize] == 'p' && ((to-from).abs() == 7 || (to-from).abs() == 9) && to == self.en_passant_square{
                         let remov: i64 = to-8;
                         self.board[remov as usize] = '.';
-                        self.last_capture = self.history.len() as i64;
+                        self.last_capture = self.time_now;
                 }
                 else if self.board[from as usize] == 'P' && ((to-from).abs() == 7 || (to-from).abs() == 9) && to == self.en_passant_square{
                         let remov: i64 = to+8;
                         self.board[remov as usize] = '.';
-                        self.last_capture = self.history.len() as i64;
+                        self.last_capture = self.time_now;
                 }
 
                 if self.board[from as usize] == 'p' || self.board[from as usize] == 'P' {
-                        self.last_capture = self.history.len() as i64;
+                        self.last_capture = self.time_now;
                 }
 
                 if colour_of(self.board[to as usize]) != 2{
-                        self.last_capture = self.history.len() as i64;
+                        self.last_capture = self.time_now;
                 }
 
                 self.board[to as usize] = self.board[from as usize];
@@ -194,9 +203,9 @@ impl Board {
                 }
 
                 if self.board[to as usize] == 'k' && (from-to).abs() > 1{
-                        if to == 1 {
+                        if to == 2 {
                                 self.board[0] = '.';
-                                self.board[2] = 'r';
+                                self.board[3] = 'r';
                         } 
                         else if to == 6 {
                                 self.board[7] = '.';
@@ -204,9 +213,9 @@ impl Board {
                         }
                 }
                 else if self.board[to as usize] == 'K' && (from-to).abs() > 1{
-                        if to == 57 {
+                        if to == 58 {
                                 self.board[56] = '.';
-                                self.board[58] = 'R';
+                                self.board[59] = 'R';
                         } 
                         else if to == 62 {
                                 self.board[63] = '.';
@@ -786,8 +795,8 @@ fn king_moves(board: &mut Board, pos: i64) -> Vec<String> {
 
         if pos == 4 {
                 if board.castle[1] && board.board[3] == '.' && board.board[2] == '.' && board.board[1] == '.' && board.board[0] == 'r'{
-                        if legal_castle(board, 3) && legal_castle(board, 2) && legal_castle(board, 1) {
-                                ret.push("e1b1".to_string());
+                        if legal_castle(board, 3) && legal_castle(board, 2) {
+                                ret.push("e1c1".to_string());
                         }
                 }
                 if board.castle[0] && board.board[5] == '.' && board.board[6] == '.' && board.board[7] == 'r' {
@@ -798,8 +807,8 @@ fn king_moves(board: &mut Board, pos: i64) -> Vec<String> {
         }
         else if pos == 60 {
                 if board.castle[3] && board.board[59] == '.' && board.board[58] == '.' && board.board[57] == '.' && board.board[56] == 'R' {
-                        if legal_castle(board, 59) && legal_castle(board, 58) && legal_castle(board, 57) {
-                                ret.push("e8b8".to_string());
+                        if legal_castle(board, 59) && legal_castle(board, 58) {
+                                ret.push("e8c8".to_string());
                         }
                 }
                 if board.castle[2] && board.board[61] == '.' && board.board[62] == '.' && board.board[63] == 'R' {
@@ -941,30 +950,50 @@ pub fn print_all_moves(board: &mut Board){
 }
 
 pub fn make_move(board: &mut Board, movi: String){
-	let decoded_tuple = decode_move(movi.clone());
+        let mut r_move: String = String::new();
+        if movi == "O-O" {
+                if board.start == 1 {
+                        r_move.push_str("e1g1");
+                } 
+                else {
+                        r_move.push_str("e8g8");
+                }
+        }
+        else if movi == "O-O-O" {
+                if board.start == 1 {
+                        r_move.push_str("e1c1");
+                }
+                else {
+                        r_move.push_str("e8c8");
+                }
+        }
+        else {
+                r_move.push_str(&movi);
+        }
+        
+	let decoded_tuple = decode_move(r_move.clone());
 	let from = decoded_tuple.0;
 	let to = decoded_tuple.1;
 	//println!("{}, {}", from, to);
 	let allmoves = all_moves(board, true);
 	let mut in_allmoves = false;
 	for pos in allmoves {
-		if pos == movi {
+		if pos == r_move {
 			in_allmoves = true;
 		}
 	}	
 
 	if in_allmoves {
-                if movi.chars().count() == 4 {
+                if r_move.chars().count() == 4 {
                         board.make_move(from, to, '.');
                 } 
                 else {
-                        board.make_move(from, to, movi.chars().nth(4).expect("REASON"));
+                        board.make_move(from, to, r_move.chars().nth(4).expect("REASON"));
                 }
 	} 
 	else {
 		println!("Invalid Move!");
 	}
-	//board.make_move(from, to);
 
 }
 
@@ -987,8 +1016,8 @@ fn switchcols(piece: char) -> char {
         return 'k';
 }
 
-fn fen_to_boardinfo(FEN: Vec<String>) -> String {
-        let boardie: String = FEN[0].clone();
+fn fen_to_boardinfo(fen: Vec<String>) -> String {
+        let boardie: String = fen[0].clone();
         let mut s1: String = String::new();
         let mut s2: String = String::new();
         let mut s3: String = String::new();
@@ -1002,7 +1031,6 @@ fn fen_to_boardinfo(FEN: Vec<String>) -> String {
         let mut linechanges = 0;
 
         for x in boardie.chars() {
-                //println!("{} __ {}", x, colour_of(x));
                 if x == '/' {
                         linechanges += 1;
                         continue;
@@ -1019,9 +1047,8 @@ fn fen_to_boardinfo(FEN: Vec<String>) -> String {
                 } 
                 else {
                         let m: i64 = x.to_string().parse().unwrap();
-                        //println!("m value {}", m);
                         let mut temps: String = String::new();
-                        for i in 0..m{
+                        for _ in 0..m{
                                 temps.push('.');
                         }
                         if linechanges == 0 {s1.push_str(&temps);}
@@ -1044,36 +1071,36 @@ fn fen_to_boardinfo(FEN: Vec<String>) -> String {
         s.push_str(&s2);
         s.push_str(&s1);
  
-        let mut ret: String = String::new();
         let mut starti: String = String::new();
-        let starting: String = FEN[1].clone();
+        let starting: String = fen[1].clone();
         if starting == "w" {starti.push('W');} 
         else {starti.push('B');}
 
-        let castling: String = FEN[2].clone();
+        let castling: String = fen[2].clone();
         let mut castlel: String = String::new();
-        let mut wK = false;
-        let mut wQ = false;
-        let mut bK = false;
-        let mut bQ = false;
+        let mut w_k = false;
+        let mut w_q = false;
+        let mut b_k = false;
+        let mut b_q = false;
 
         for x in castling.chars() {
-                if x == 'K' {wK = true;}
-                if x == 'Q' {wQ = true;}
-                if x == 'k' {bK = true;}
-                if x == 'q' {bQ = true;}
+                if x == 'K' {w_k = true;}
+                if x == 'Q' {w_q = true;}
+                if x == 'k' {b_k = true;}
+                if x == 'q' {b_q = true;}
         }
-        if wK {castlel.push('1');}
+        if w_k {castlel.push('1');}
         else  {castlel.push('0');}
-        if wQ {castlel.push('1');}
+        if w_q {castlel.push('1');}
         else  {castlel.push('0');}
-        if bK {castlel.push('1');}
+        if b_k {castlel.push('1');}
         else  {castlel.push('0');}
-        if bQ {castlel.push('1');}
+        if b_q {castlel.push('1');}
         else  {castlel.push('0');}
 
-        let enpassant = FEN[3].clone();
-        let halfmov = FEN[4].clone();
+        let enpassant = fen[3].clone();
+        let capmov = fen[4].clone();
+        let halfmov = fen[5].clone();
 
         let mut ret: String = String::new();
         if enpassant == "-" {
@@ -1085,6 +1112,8 @@ fn fen_to_boardinfo(FEN: Vec<String>) -> String {
         ret.push_str(&starti);
         ret.push_str(&castlel);
         ret.push_str(&s);
+        ret.push('+');
+        ret.push_str(&capmov);
         ret.push('+');
         ret.push_str(&halfmov);
         return ret;
@@ -1129,7 +1158,7 @@ pub fn is_over(board: &mut Board) -> i64 {
                 }
         }
 
-        let temp: i64 = board.history.len() as i64;
+        let temp: i64 = board.time_now;
         if temp - board.last_capture >= 50 {
                 return 4; //50 move rule
         }
