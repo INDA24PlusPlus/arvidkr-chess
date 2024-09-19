@@ -13,7 +13,8 @@ Funktionen load_from_fen() finns för att fylla detta syfte.
 ### Dragformatering
 Alla drag formateras som "e1d2", alltså från vilken position du vill göra draget följt av positionen den pjäsen ska flyttas till. \
 Rockad görs antingen som en kungförflyttning (exempelvis rockad för vit på damsidan blir "e1c1"), eller genom "O-O"/"O-O-O" för att signalera kungsiderockad/damsiderockad för den nuvarande spelaren. I funktionen "print_all_moves" visas dessa endast på formatet "e1c1" men man kan skriva in "O-O" och den förstår. \
-Promotion fungerar genom att du skriver det vanliga draget (exempelvis "a7a8", bonden som står på a7 ska flyttas till a8), 
+Promotion fungerar genom att du skriver det vanliga draget (exempelvis "a7a8", bonden som står på a7 ska flyttas till a8), följt av den pjäs du vill promote:a till med stor bokstav (dam - 'Q', springare - 'N', löpare - 'B', torn - 'R').
+Exempelvis a7a8Q för att promote:a till en dam på ruta a8. 
 ## Board
 Brädet innehåller 7 saker:
 ### board
@@ -47,4 +48,17 @@ Till exempel är tiden efter 10 fulla drag (vit har gjort 10 drag, svart har gjo
 ### filtered_moves (public funktion)
 filtered_moves tar in ett mutable bräde och returnerar alla lagliga drag på formatet "d2d4" i den nuvarande positionen för den nuvarande spelaren
 ### get_amount_moves (public funktion)
-get_amount_moves tar också in 
+get_amount_moves tar också in ett mutable bräda fast returnerar antalet lagliga drag i form av en i64.
+### is_over (public funktion)
+is_over tar in ett mutable bräde och returnerar ett av 5 värden:\
+0 -> partiet är inte över \
+1 -> schackmatt \
+2 -> patt \
+3 -> 3 fold repetition \
+4 -> 50 move rule 
+### get_start (public funktion)
+get_start tar in ett mutable bräde och returnerar en i64; vems tur det är (0 -> svart, 1 -> vit)
+### load_from_fen (public funktion)
+load_from_fen tar in ett mutable bräde samt en Vec<String> som innehåller delarna av en FEN, och loadar den till brädet.
+### fenstring_to_vec (public funktion)
+fenstring_to_vec tar in en String och returnerar en Vec<String>, den splittrar upp delarna av en fen string och returnerar det så som load_from_fen vill ha det.
