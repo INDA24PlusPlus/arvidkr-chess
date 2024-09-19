@@ -1,5 +1,7 @@
 # Tjackbibliotek (årets bästa kod fosho)
 ## Allmän Info
+### main.rs
+main.rs finns så att du kan se en implementation av biblioteket och hur man använder de flesta public functions och metoderna.
 ### boardinfo
 Ett format för en position som jag kör på:\
 De första 2 karaktärerna är positionen (på "a1"-format) där en-passant-rutan är, ifall brädet inte har en en-passant-ruta blir detta istället "XX" \
@@ -62,3 +64,16 @@ get_start tar in ett mutable bräde och returnerar en i64; vems tur det är (0 -
 load_from_fen tar in ett mutable bräde samt en Vec<String> som innehåller delarna av en FEN, och loadar den till brädet.
 ### fenstring_to_vec (public funktion)
 fenstring_to_vec tar in en String och returnerar en Vec<String>, den splittrar upp delarna av en fen string och returnerar det så som load_from_fen vill ha det.
+### print_history (public funktion)
+print_history tar in ett mutable bräde och printar brädets history utan att returnera någonting
+### load_from_info (public funktion)
+load_from_info tar in ett mutable bräde samt en String (brädets boardinfo) och gör så att brädet får den infon. 
+## Viktiga metoder
+### board.init_board()
+board.init_board() tar inte in någonting och sätter brädet till schacks startposition
+### board.print_board()
+board.print_board() tar inte in någonting och printar brädet i 2d
+### board.get_board()
+board.get_board() tar inte in någonting och returnerar brädets boardinfo
+### board.switch_start()
+board.switch_start() tar inte in någonting och ändrar vilken spelare som startar
