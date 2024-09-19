@@ -1,3 +1,5 @@
+mod tests;
+
 pub struct Board {
 	board : [char; 64],
 	start : i64,
@@ -16,7 +18,7 @@ impl Board {
                         history: Vec::new(),
                         castle: [true; 4],
                         en_passant_square: -1,
-                        last_capture: -1,
+                        last_capture: 0,
 		}
 	}
 
@@ -44,6 +46,8 @@ impl Board {
                 for i in 0..64 {
                         ret.push(self.board[i as usize]);
                 }
+                ret.push('+');
+                ret.push_str(&self.last_capture.to_string());
                 return ret;
         }
 
@@ -52,6 +56,7 @@ impl Board {
                 let mut s: String = String::new();
                 s.push_str("a1");
                 let mut is_valid: bool = true;
+                let mut temp_s : String = String::new();
                 for x in info.chars() {
                         if counter < 2 {
                                 s.push(x);
@@ -71,12 +76,17 @@ impl Board {
                                 if x == '1' {self.castle[y] = true;}
                                 else {self.castle[y] = false;}
                         }
-                        else {
+                        else if counter < 71{
                                 let y: usize = counter-7;
                                 self.board[y] = x;
+                        } else if counter > 71{
+                                temp_s.push(x);
                         }
                         counter += 1;
                 }
+                //println!("temps {}", temp_s);
+                let l_cap: i64 = temp_s.parse().unwrap();
+                self.last_capture = l_cap;
                 //self.print_board();
                 self.history.push(self.lineboard());
         }
@@ -128,7 +138,9 @@ impl Board {
 
         pub fn get_board(&self){
                 let s = self.lineboard();
-                println!("{}", s);
+                let index: usize = self.history.len()-1;
+                let s1 = self.history[index].clone();
+                println!("{}", s1);
         }
 
         pub fn switch_start(&mut self){
@@ -144,6 +156,10 @@ impl Board {
                 else if self.board[from as usize] == 'P' && ((to-from).abs() == 7 || (to-from).abs() == 9) && to == self.en_passant_square{
                         let remov: i64 = to+8;
                         self.board[remov as usize] = '.';
+                        self.last_capture = self.history.len() as i64;
+                }
+
+                if self.board[from as usize] == 'p' || self.board[from as usize] == 'P' {
                         self.last_capture = self.history.len() as i64;
                 }
 
@@ -225,13 +241,18 @@ impl Board {
 
 }
 fn colour_of(piece: char) -> i64 {
-        if piece == '.' {
-                return 2;
+        if piece == 'P' || piece == 'N' || piece == 'K' || piece == 'Q' || piece == 'B' || piece == 'R'{
+                return 0;
         }
-        else if piece == 'p' || piece == 'n' || piece == 'k' || piece == 'q' || piece == 'b' || piece == 'b' || piece == 'r' {
+        else if piece == 'p' || piece == 'n' || piece == 'k' || piece == 'q' || piece == 'b' || piece == 'r' {
                 return 1;
         }
-        return 0;
+        return 2;
+}
+
+fn is_in_bound(x: i64, y: i64) -> bool {
+        if x < 0 || x > 7 || y < 0 || y > 7 {return false;}
+        return true;
 }
 
 fn checking_legal(board: &mut Board, from: i64, to: i64) -> bool {
@@ -258,7 +279,38 @@ fn checking_legal(board: &mut Board, from: i64, to: i64) -> bool {
 
         board.history.pop();
         board.history.pop();
-        board.last_capture = board.history.len() as i64;
+
+        //println!("posii {}", king_pos);
+
+        if king_pos == to {
+                //No kings in proximity from to
+                let r: i64 = to/8;
+                let c: i64 = to%8;
+                let mut square: Vec<i64> = vec![];
+                //println!("kingpos: {}", king_pos);
+                if is_in_bound(r-1, c-1) {square.push((r-1)*8+c-1);}
+                if is_in_bound(r-1, c)   {square.push((r-1)*8+c);  }
+                if is_in_bound(r-1, c+1) {square.push((r-1)*8+c+1);}
+                if is_in_bound(r+1, c-1) {square.push((r+1)*8+c-1);}
+                if is_in_bound(r+1, c)   {square.push((r+1)*8+c);  }
+                if is_in_bound(r+1, c+1) {square.push((r+1)*8+c+1);}
+                if is_in_bound(r, c-1)   {square.push((r)*8+c-1);  }
+                if is_in_bound(r, c+1)   {square.push((r)*8+c+1);  }
+
+
+                for x in square {
+                        //print!("{}, ", x);
+                        if (board.start == 1 && board.board[x as usize] == 'K') || (board.start == 0 && board.board[x as usize] == 'k'){
+                                return false;
+                        }
+                
+                }
+                //println!("");
+                //println!("");
+                
+        }
+
+
         return ans;
 }
 
@@ -742,8 +794,6 @@ fn king_moves(board: &mut Board, pos: i64) -> Vec<String> {
                         if legal_castle(board, 5) && legal_castle(board, 6) {
                                 ret.push("e1g1".to_string());
                         }
-                        println!("{}", legal_castle(board, 5));
-                        println!("{}", legal_castle(board, 6));
                 }
         }
         else if pos == 60 {
@@ -884,6 +934,7 @@ pub fn filtered_moves(board: &mut Board) -> Vec<String> {
 
 pub fn print_all_moves(board: &mut Board){
 	let v = filtered_moves(board);
+        println!("{}", v.len());
 	for s in v {
 		println!("{}", s);
 	}
@@ -921,8 +972,149 @@ pub fn load_from_info(board: &mut Board, info: String){
         board.infoload(info);
 }
 
-pub fn load_from_fen(board: &mut Board, info: String){
-        
+fn switchcols(piece: char) -> char {
+        if piece == 'p' {return 'P';}
+        if piece == 'n' {return 'N';}
+        if piece == 'b' {return 'B';}
+        if piece == 'r' {return 'R';}
+        if piece == 'q' {return 'Q';}
+        if piece == 'k' {return 'K';}
+        if piece == 'P' {return 'p';}
+        if piece == 'N' {return 'n';}
+        if piece == 'B' {return 'b';}
+        if piece == 'R' {return 'r';}
+        if piece == 'Q' {return 'q';}
+        return 'k';
+}
+
+fn fen_to_boardinfo(FEN: Vec<String>) -> String {
+        let boardie: String = FEN[0].clone();
+        let mut s1: String = String::new();
+        let mut s2: String = String::new();
+        let mut s3: String = String::new();
+        let mut s4: String = String::new();
+        let mut s5: String = String::new();
+        let mut s6: String = String::new();
+        let mut s7: String = String::new();
+        let mut s8: String = String::new();
+
+        let mut s: String = String::new();
+        let mut linechanges = 0;
+
+        for x in boardie.chars() {
+                //println!("{} __ {}", x, colour_of(x));
+                if x == '/' {
+                        linechanges += 1;
+                        continue;
+                }
+                if colour_of(x) != 2 {
+                        if linechanges == 0 {s1.push(switchcols(x));}
+                        if linechanges == 1 {s2.push(switchcols(x));}
+                        if linechanges == 2 {s3.push(switchcols(x));}
+                        if linechanges == 3 {s4.push(switchcols(x));}
+                        if linechanges == 4 {s5.push(switchcols(x));}
+                        if linechanges == 5 {s6.push(switchcols(x));}
+                        if linechanges == 6 {s7.push(switchcols(x));}
+                        if linechanges == 7 {s8.push(switchcols(x));}
+                } 
+                else {
+                        let m: i64 = x.to_string().parse().unwrap();
+                        //println!("m value {}", m);
+                        let mut temps: String = String::new();
+                        for i in 0..m{
+                                temps.push('.');
+                        }
+                        if linechanges == 0 {s1.push_str(&temps);}
+                        if linechanges == 1 {s2.push_str(&temps);}
+                        if linechanges == 2 {s3.push_str(&temps);}
+                        if linechanges == 3 {s4.push_str(&temps);}
+                        if linechanges == 4 {s5.push_str(&temps);}
+                        if linechanges == 5 {s6.push_str(&temps);}
+                        if linechanges == 6 {s7.push_str(&temps);}
+                        if linechanges == 7 {s8.push_str(&temps);}
+                }
+        }
+
+        s.push_str(&s8);
+        s.push_str(&s7);
+        s.push_str(&s6);
+        s.push_str(&s5);
+        s.push_str(&s4);
+        s.push_str(&s3);
+        s.push_str(&s2);
+        s.push_str(&s1);
+ 
+        let mut ret: String = String::new();
+        let mut starti: String = String::new();
+        let starting: String = FEN[1].clone();
+        if starting == "w" {starti.push('W');} 
+        else {starti.push('B');}
+
+        let castling: String = FEN[2].clone();
+        let mut castlel: String = String::new();
+        let mut wK = false;
+        let mut wQ = false;
+        let mut bK = false;
+        let mut bQ = false;
+
+        for x in castling.chars() {
+                if x == 'K' {wK = true;}
+                if x == 'Q' {wQ = true;}
+                if x == 'k' {bK = true;}
+                if x == 'q' {bQ = true;}
+        }
+        if wK {castlel.push('1');}
+        else  {castlel.push('0');}
+        if wQ {castlel.push('1');}
+        else  {castlel.push('0');}
+        if bK {castlel.push('1');}
+        else  {castlel.push('0');}
+        if bQ {castlel.push('1');}
+        else  {castlel.push('0');}
+
+        let enpassant = FEN[3].clone();
+        let halfmov = FEN[4].clone();
+
+        let mut ret: String = String::new();
+        if enpassant == "-" {
+                ret.push_str("XX");
+        } 
+        else {
+                ret.push_str(&enpassant);
+        }
+        ret.push_str(&starti);
+        ret.push_str(&castlel);
+        ret.push_str(&s);
+        ret.push('+');
+        ret.push_str(&halfmov);
+        return ret;
+}
+
+pub fn load_from_fen(board: &mut Board, info: Vec<String>){
+        let ninfo = fen_to_boardinfo(info);
+        println!("{}", ninfo);
+        load_from_info(board, ninfo);
+}
+
+pub fn fenstring_to_vec(fen: String) -> Vec<String> {
+        let mut ret: Vec<String> = vec![];
+        let mut temp_s: String = String::new();
+        for x in fen.chars() {
+                if x == ' '{
+                        ret.push(temp_s.clone());
+                        temp_s.clear();
+                }
+                else {
+                        temp_s.push(x);
+                }
+        }
+        ret.push(temp_s.clone());
+        return ret;
+}
+
+pub fn get_amount_moves(board: &mut Board) -> i64 {
+        let v = filtered_moves(board);
+        return v.len() as i64;
 }
 
 pub fn is_over(board: &mut Board) -> i64 {
@@ -960,15 +1152,4 @@ pub fn is_over(board: &mut Board) -> i64 {
 
 pub fn get_start(board: &mut Board) -> i64 {
         return board.start;
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
 }
