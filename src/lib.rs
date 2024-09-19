@@ -1146,12 +1146,20 @@ pub fn get_amount_moves(board: &mut Board) -> i64 {
         return v.len() as i64;
 }
 
+fn important_parts(s: String) -> String {
+        let mut ret: String = String::new();
+        for i in 0..71 {
+                ret.push(s.chars().nth(i).unwrap());
+        }
+        return ret;
+}
+
 pub fn is_over(board: &mut Board) -> i64 {
         let testing = filtered_moves(board);
         for x in board.history.clone() {
                 let mut counter = 0;
                 for y in board.history.clone() {
-                        if x == y {counter += 1;}
+                        if important_parts(x.clone()) == important_parts(y.clone()) {counter += 1;}
                 }
                 if counter >= 3 {
                         return 3; //3 fold rep
