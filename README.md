@@ -1,4 +1,4 @@
-# Tjackbibliotek (årets bästa kod fosho)
+# SchackbibLIotekAM (årets bästa kod fosho)
 ## Allmän Info
 ### main.rs
 main.rs finns så att du kan se en implementation av biblioteket och hur man använder de flesta public functions och metoderna.
