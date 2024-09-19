@@ -9,7 +9,7 @@ fn main(){
 	board.init_board();
 	board.print_board();
 	loop {
-		println!("Do something!, 'makemove [move]', 'printboard', 'reset', 'printmoves', 'boardinfo', 'terminate', 'printhistory', 'infoload [board_info]'");
+		println!("Do something!, 'makemove [move]', 'printboard', 'reset', 'printmoves', 'boardinfo', 'terminate', 'printhistory', 'fenload [FEN]', 'infoload [board_info]'");
 		let line = iterator.next().unwrap().unwrap();
 		let sv1:Vec<&str> = line.split_whitespace().collect();
 		if sv1.len() == 1 {
@@ -31,7 +31,7 @@ fn main(){
 			}
 			if terminated {break;}
 		} 
-		else {
+		else if sv1.len() == 2{
 			let mut first = -1;
 			for x in sv1.iter(){
 				if first == 0 {
@@ -44,6 +44,18 @@ fn main(){
 				else if *x == "infoload" {first = 1;}
 				
 			}
+		} 
+		else {
+			let mut counter = 0;
+			let mut v : Vec<String> = vec![];
+			for x in sv1.iter(){
+				if counter >= 1 {
+					v.push((*x).to_string());
+				}
+
+				counter += 1;
+			}
+			arvidkr_chess::load_from_fen(&mut board, v.clone());
 		}
 		println!("");
 		let state = arvidkr_chess::is_over(&mut board);
