@@ -795,24 +795,24 @@ fn king_moves(board: &mut Board, pos: i64) -> Vec<String> {
 
         if pos == 4 {
                 if board.castle[1] && board.board[3] == '.' && board.board[2] == '.' && board.board[1] == '.' && board.board[0] == 'r'{
-                        if legal_castle(board, 3) && legal_castle(board, 2) {
+                        if !in_check(board, 4) && legal_castle(board, 3) && legal_castle(board, 2) {
                                 ret.push("e1c1".to_string());
                         }
                 }
                 if board.castle[0] && board.board[5] == '.' && board.board[6] == '.' && board.board[7] == 'r' {
-                        if legal_castle(board, 5) && legal_castle(board, 6) {
+                        if !in_check(board, 4) && legal_castle(board, 5) && legal_castle(board, 6) {
                                 ret.push("e1g1".to_string());
                         }
                 }
         }
         else if pos == 60 {
                 if board.castle[3] && board.board[59] == '.' && board.board[58] == '.' && board.board[57] == '.' && board.board[56] == 'R' {
-                        if legal_castle(board, 59) && legal_castle(board, 58) {
+                        if !in_check(board, 60) && legal_castle(board, 59) && legal_castle(board, 58) {
                                 ret.push("e8c8".to_string());
                         }
                 }
                 if board.castle[2] && board.board[61] == '.' && board.board[62] == '.' && board.board[63] == 'R' {
-                        if legal_castle(board, 61) && legal_castle(board, 62) {
+                        if !in_check(board, 60) && legal_castle(board, 61) && legal_castle(board, 62) {
                                 ret.push("e8g8".to_string());
                         }
                 }
