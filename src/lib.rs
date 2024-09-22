@@ -1,12 +1,12 @@
 mod tests;
 
 pub struct Board {
-	board : [char; 64],
+	pub board : [char; 64],
 	start : i64,
         history: Vec<String>,
         castle : [bool; 4],
         en_passant_square: i64,
-        last_capture: i64,
+        pub last_capture: i64,
         time_now: i64,
 
 }
