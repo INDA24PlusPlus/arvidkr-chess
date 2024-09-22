@@ -145,11 +145,16 @@ impl Board {
                 println!();
         }
 
-        pub fn get_board(&self){
+        pub fn get_board(&self) {
                 let index: usize = self.history.len()-1;
                 let s1 = self.history[index].clone();
                 println!("{}", s1);
         }
+
+	pub fn get_boardinfo(&self) -> String {
+		let index: usize = self.history.len()-1;
+		return self.history[index].clone();
+	}
 
         pub fn switch_start(&mut self){
                 self.start = 1-self.start;
