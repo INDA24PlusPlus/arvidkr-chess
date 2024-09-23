@@ -396,14 +396,14 @@ fn row_decode(cx: char) -> i64 {
 }
 
 
-fn decode_move(movi: String) -> (i64, i64){
+pub fn decode_move(movi: String) -> (i64, i64){
 	let x = column_decode(movi.chars().nth(0).unwrap()) + 8*row_decode(movi.chars().nth(1).unwrap());
 	let y = column_decode(movi.chars().nth(2).unwrap()) + 8*row_decode(movi.chars().nth(3).unwrap());
 
 	return (x, y);
 }
 
-fn encode_move(from: i64, to: i64) -> String {
+pub fn encode_move(from: i64, to: i64) -> String {
 	let column_encoding: Vec<char> = vec!['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 	let row_encoding: Vec<char> = vec!['1', '2', '3', '4', '5', '6', '7', '8'];
 
