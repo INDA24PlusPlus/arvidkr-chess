@@ -744,7 +744,7 @@ pub fn print_history(board: &mut Board){
         }
 }
 
-fn in_check(board: &mut Board, whereking: i64) -> bool {
+pub fn in_check(board: &mut Board, whereking: i64) -> bool {
         board.switch_start();
         let v = all_moves(board, false);
         let s = encode_move(0, whereking);
@@ -767,7 +767,7 @@ fn in_check(board: &mut Board, whereking: i64) -> bool {
         return illegal;
 }
 
-fn legal_castle(board: &mut Board, pos: i64) -> bool {
+pub fn legal_castle(board: &mut Board, pos: i64) -> bool {
         let col: i64 = 1-(pos/8)/7;
         if col == 1 {
                 board.board[pos as usize] = 'k';
