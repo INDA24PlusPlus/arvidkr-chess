@@ -2,7 +2,7 @@ mod tests;
 
 pub struct Board {
 	board : [char; 64],
-	start : i64,
+	pub start : i64,
         history: Vec<String>,
         castle : [bool; 4],
         en_passant_square: i64,
